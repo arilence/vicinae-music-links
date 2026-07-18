@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/vicinaehq/vicinae/refs/heads/main/extra/schemas/extension.json",
+  "name": "music-links",
+  "version": "0.1.0",
+  "title": "Music Links",
+  "description": "Create cross-platform music links",
+  "categories": [],
+  "license": "MIT",
+  "author": "Arilence",
+  "contributors": [],
+  "pastContributors": [],
+  "icon": "extension_icon.png",
+  "commands": [
+    {
+      "name": "music-links",
+      "title": "Create Music Link",
+      "subtitle": "Share music across streaming services",
+      "description": "Create and copy a cross-platform link for music",
+      "mode": "view"
+    }
+  ],
+  "preferences": [],
+  "scripts": {
+    "build": "vici build",
+    "dev": "vici develop",
+    "format": "biome format --write src",
+    "lint": "vici lint"
+  },
+  "dependencies": {
+    "@vicinae/api": "^0.21.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@biomejs/biome": "2.3.2"
+  }
+}

@@ -16,7 +16,15 @@
       "title": "Create Music Link",
       "subtitle": "Share music across streaming services",
       "description": "Create and copy a cross-platform link for music",
-      "mode": "view"
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "link",
+          "placeholder": "Link to Spotify, Tidal, Apple Music, etc",
+          "type": "text",
+          "required": true
+        }
+      ]
     }
   ],
   "preferences": [],

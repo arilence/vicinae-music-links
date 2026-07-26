@@ -47,6 +47,7 @@
           pkgs = nixpkgs.legacyPackages.${system};
           package = self.packages.${system}.default;
           inherit (package.config.mkDerivation) buildInputs nativeBuildInputs;
+          biomeArch = if pkgs.stdenv.hostPlatform.isAarch64 then "arm64" else "x64";
         in
         {
           default = pkgs.mkShell {
@@ -59,9 +60,14 @@
               ++ [
                 pkgs.nodePackages.typescript-language-server
               ];
-            shellHook = ''
-              export PATH="$PWD/node_modules/.bin:$PATH"
-            '';
+            shellHook =
+              ''
+                export PATH="$PWD/node_modules/.bin:$PATH"
+              ''
+              + pkgs.lib.optionalString pkgs.stdenv.isLinux ''
+                # Biome's static musl build runs on NixOS without a system-wide nix-ld setup.
+                export BIOME_BINARY="$PWD/node_modules/@biomejs/cli-linux-${biomeArch}-musl/biome"
+              '';
           };
         }
       );

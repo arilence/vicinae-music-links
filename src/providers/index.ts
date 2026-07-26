@@ -1,4 +1,4 @@
-import { songlinkProvider } from "./songlink";
+import { odesliProvider } from "./odesli";
 import { songPortProvider } from "./songport";
 import type { UniversalLinkProvider } from "./types";
 

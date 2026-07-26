@@ -66,19 +66,19 @@ function parsePageData(html: string): OdesliPageData {
     );
 
     if (!nextDataMatch?.[1]) {
-        throw new Error("Songlink returned an unsupported page");
+        throw new Error("Odesli returned an unsupported page");
     }
 
     let nextData: OdesliNextData;
     try {
         nextData = JSON.parse(nextDataMatch[1]) as OdesliNextData;
     } catch {
-        throw new Error("Songlink returned invalid page data");
+        throw new Error("Odesli returned invalid page data");
     }
 
     const pageData = nextData.props?.pageProps?.pageData;
     if (!pageData) {
-        throw new Error("Songlink could not find this music link");
+        throw new Error("Odesli could not find this music link");
     }
 
     return pageData;
@@ -100,7 +100,7 @@ function musicMetadataFrom(pageData: OdesliPageData): MusicMetadata {
     const entity = pageData.entityData;
 
     if (!entity?.title) {
-        throw new Error("Songlink returned incomplete music metadata");
+        throw new Error("Odesli returned incomplete music metadata");
     }
 
     return {
@@ -135,7 +135,7 @@ function servicesFrom(pageData: OdesliPageData): StreamingService[] {
     return [...services.values()];
 }
 
-async function resolveSonglink(
+async function resolveOdesliLink(
     inputUrl: string,
     signal?: AbortSignal,
 ): Promise<UniversalLinkResult> {
@@ -146,23 +146,23 @@ async function resolveSonglink(
     });
 
     if (!response.ok) {
-        throw new Error(`Songlink request failed (${response.status})`);
+        throw new Error(`Odesli request failed (${response.status})`);
     }
 
     const pageData = parsePageData(await response.text());
     const pageUrl = pageData.pageUrl ?? response.url;
 
     return {
-        id: songlinkProvider.id,
-        provider: songlinkProvider.name,
+        id: odesliProvider.id,
+        provider: odesliProvider.name,
         pageUrl,
         music: musicMetadataFrom(pageData),
         services: servicesFrom(pageData),
     };
 }
 
-export const songlinkProvider: UniversalLinkProvider = {
-    id: "songlink",
-    name: "Songlink",
-    resolve: resolveSonglink,
+export const odesliProvider: UniversalLinkProvider = {
+    id: "odesli",
+    name: "Odesli",
+    resolve: resolveOdesliLink,
 };

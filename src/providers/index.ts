@@ -10,6 +10,6 @@ export type {
 } from "./types";
 
 export const universalLinkProviders = [
-    songlinkProvider,
     songPortProvider,
+    odesliProvider,
 ] satisfies UniversalLinkProvider[];

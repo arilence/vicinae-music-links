@@ -105,7 +105,7 @@ function MusicLinkMetadata({ result }: { result: UniversalLinkResult }) {
                     />
                     <List.Item.Detail.Metadata.Label
                         title="Provider"
-                        text={result.provider}
+                        text={`Powered by ${result.provider}`}
                     />
                 </List.Item.Detail.Metadata>
             }

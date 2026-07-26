@@ -1,5 +1,10 @@
 {
-  "formatter": {
-    "useEditorconfig": true,
-  },
+    "formatter": {
+        "useEditorconfig": true,
+    },
+    "json": {
+        "formatter": {
+            "trailingCommas": "all",
+        },
+    },
 }

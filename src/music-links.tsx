@@ -8,6 +8,7 @@ import {
     PopToRootType,
     showHUD,
 } from "@vicinae/api";
+import { useEffect, useState } from "react";
 
 type StreamingService = {
     name: string;
@@ -28,6 +29,8 @@ type UniversalLinkResult = {
     music: MusicMetadata;
     services: StreamingService[];
 };
+
+type ProviderStatus = "loading" | "success";
 
 const mockMusic: MusicMetadata = {
     title: "Song Title",
@@ -105,6 +108,39 @@ function MusicLinkMetadata({ result }: { result: UniversalLinkResult }) {
 }
 
 export default function Command() {
+    const [providerStatuses, setProviderStatuses] = useState<
+        Record<string, ProviderStatus>
+    >(() =>
+        Object.fromEntries(mockResults.map((result) => [result.id, "loading"])),
+    );
+    const [selectedProviderId, setSelectedProviderId] = useState(
+        mockResults[0]?.id,
+    );
+
+    useEffect(() => {
+        const timers = mockResults.map((result, index) =>
+            setTimeout(
+                () => {
+                    setProviderStatuses((currentStatuses) => ({
+                        ...currentStatuses,
+                        [result.id]: "success",
+                    }));
+                },
+                (index + 1) * 2_000,
+            ),
+        );
+
+        return () => timers.forEach(clearTimeout);
+    }, []);
+
+    const readyProviderCount = Object.values(providerStatuses).filter(
+        (status) => status === "success",
+    ).length;
+    const isLoading = readyProviderCount < mockResults.length;
+    const isSelectedProviderReady = selectedProviderId
+        ? providerStatuses[selectedProviderId] === "success"
+        : false;
+
     async function copyUniversalLink(result: UniversalLinkResult) {
         await Clipboard.copy(result.pageUrl);
         await showHUD(`${result.provider} link copied`, {
@@ -117,19 +153,29 @@ export default function Command() {
         <List
             navigationTitle="Universal Music Links"
             searchBarPlaceholder="Filter compatible link services..."
-            isShowingDetail
+            isShowingDetail={isSelectedProviderReady}
+            isLoading={isLoading}
+            onSelectionChange={setSelectedProviderId}
         >
             <List.Section
                 title="Compatible Services"
-                subtitle={`${mockResults.length} found`}
+                subtitle={
+                    isLoading
+                        ? `${readyProviderCount}/${mockResults.length} ready`
+                        : `${mockResults.length} found`
+                }
             >
                 {mockResults.map((result) => {
+                    const isReady = providerStatuses[result.id] === "success";
+
                     return (
                         <List.Item
                             key={result.id}
                             id={result.id}
                             title={result.provider}
-                            icon={Icon.Link}
+                            icon={
+                                isReady ? Icon.CheckCircle : Icon.CircleProgress
+                            }
                             keywords={[
                                 result.music.title,
                                 result.music.artist,
@@ -138,28 +184,40 @@ export default function Command() {
                                 ),
                             ]}
                             accessories={[
-                                {
-                                    text: `${result.services.length} services`,
-                                },
+                                isReady
+                                    ? {
+                                          tag: {
+                                              value: `${result.services.length} services`,
+                                              color: Color.Green,
+                                          },
+                                      }
+                                    : {
+                                          tag: {
+                                              value: "Loading",
+                                              color: Color.Blue,
+                                          },
+                                      },
                             ]}
                             detail={<MusicLinkMetadata result={result} />}
                             actions={
-                                <ActionPanel>
-                                    <Action
-                                        title={`Copy ${result.provider} Link`}
-                                        icon={Icon.CopyClipboard}
-                                        shortcut="copy"
-                                        autoFocus
-                                        onAction={() =>
-                                            copyUniversalLink(result)
-                                        }
-                                    />
-                                    <Action.OpenInBrowser
-                                        title={`Open ${result.provider} Link`}
-                                        icon={Icon.Globe01}
-                                        url={result.pageUrl}
-                                    />
-                                </ActionPanel>
+                                isReady ? (
+                                    <ActionPanel>
+                                        <Action
+                                            title={`Copy ${result.provider} Link`}
+                                            icon={Icon.CopyClipboard}
+                                            shortcut="copy"
+                                            autoFocus
+                                            onAction={() =>
+                                                copyUniversalLink(result)
+                                            }
+                                        />
+                                        <Action.OpenInBrowser
+                                            title={`Open ${result.provider} Link`}
+                                            icon={Icon.Globe01}
+                                            url={result.pageUrl}
+                                        />
+                                    </ActionPanel>
+                                ) : undefined
                             }
                         />
                     );

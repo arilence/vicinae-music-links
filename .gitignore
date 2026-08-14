@@ -7,3 +7,6 @@
 # Nix / Dream2nix
 /result
 /.dream2nix/
+
+### direnv ###
+.direnv

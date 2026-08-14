@@ -30,7 +30,7 @@
   "preferences": [],
   "scripts": {
     "build": "vici build",
-    "dev": "vici develop",
+    "dev": "node --import ./scripts/develop.mjs ./node_modules/@vicinae/api/dist/bin.js develop",
     "format": "biome format --write src",
     "lint": "vici lint"
   },

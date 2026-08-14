@@ -2,74 +2,153 @@
   description = "A Vicinae extension for creating cross-platform music links";
 
   inputs = {
-    dream2nix.url = "github:nix-community/dream2nix";
-    nixpkgs.follows = "dream2nix/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    vicinae = {
+      url = "github:vicinaehq/vicinae";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  nixConfig = {
+    extra-substituters = [ "https://vicinae.cachix.org" ];
+    extra-trusted-public-keys = [
+      "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
+    ];
   };
 
   outputs =
     {
       self,
-      dream2nix,
       nixpkgs,
+      vicinae,
     }:
     let
-      eachSystem = nixpkgs.lib.genAttrs [
+      inherit (nixpkgs) lib;
+
+      packageJson = builtins.fromJSON (builtins.readFile ./package.json);
+      supportedSystems = [
         "aarch64-darwin"
         "aarch64-linux"
         "x86_64-darwin"
         "x86_64-linux"
       ];
+      forEachSystem = lib.genAttrs supportedSystems;
+      pkgsFor =
+        system:
+        import nixpkgs {
+          inherit system;
+          config = lib.optionalAttrs (system == "x86_64-darwin") {
+            # Nixpkgs 26.11 no longer supports Intel Darwin, but retains this escape hatch so
+            # downstream flakes can keep evaluating an existing platform matrix.
+            allowDeprecatedx86_64Darwin = "force";
+          };
+        };
     in
     {
-      packages = eachSystem (system: {
-        default = dream2nix.lib.evalModules {
-          packageSets.nixpkgs = nixpkgs.legacyPackages.${system};
-          modules = [
-            # Import our actual package definiton as a dream2nix module from ./default.nix
-            ./default.nix
-            {
-              # Aid dream2nix to find the project root. This setup should also works for mono repos.
-              # If you only have a single project, the defaults should be good enough.
-              paths.projectRoot = ./.;
-              # can be changed to ".git" or "flake.nix" to get rid of .project-root
-              paths.projectRootFile = "flake.nix";
-              paths.package = ./.;
-            }
-          ];
-        };
-      });
-
-      # Reuse Dream2nix's generated shell so Node.js/npm and all binaries from the locked npm
-      # dependencies are available without listing them twice.
-      devShells = eachSystem (
+      packages = forEachSystem (
         system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
-          package = self.packages.${system}.default;
-          inherit (package.config.mkDerivation) buildInputs nativeBuildInputs;
+          pkgs = pkgsFor system;
+          mkVicinaeExtension =
+            if system == "x86_64-darwin" then
+              pkgs.callPackage (vicinae.outPath + "/nix/mkVicinaeExtension.nix") { }
+            else
+              vicinae.lib.${system}.mkVicinaeExtension;
+          package = mkVicinaeExtension {
+            pname = "vicinae-extension-${packageJson.name}";
+            version = packageJson.version;
+            src = ./.;
+            npmFlags = [ "--legacy-peer-deps" ];
+          };
+        in
+        {
+          default = package;
+          music-links = package;
+        }
+      );
+
+      checks = forEachSystem (
+        system:
+        let
+          pkgs = pkgsFor system;
+          package = self.packages.${system}.music-links;
+        in
+        {
+          music-links = package;
+
+          music-links-layout = pkgs.runCommand "music-links-layout" { } ''
+            extension="${package}"
+
+            if [ ! -f "$extension/package.json" ]; then
+              echo "missing package.json at the extension root" >&2
+              exit 1
+            fi
+
+            jsEntry="$(${pkgs.findutils}/bin/find "$extension" -maxdepth 1 -type f -name '*.js' -print -quit)"
+            if [ -z "$jsEntry" ]; then
+              echo "missing compiled JavaScript entry point at the extension root" >&2
+              exit 1
+            fi
+
+            if [ ! -f "$extension/assets/extension_icon.png" ]; then
+              echo "missing assets/extension_icon.png" >&2
+              exit 1
+            fi
+
+            if [ -e "$extension/lib/node_modules" ]; then
+              echo "unexpected lib/node_modules directory in the extension output" >&2
+              exit 1
+            fi
+
+            if ${pkgs.gnugrep}/bin/grep --binary-files=without-match -R -F -q /build/ "$extension"; then
+              echo "extension output contains a reference to /build/" >&2
+              exit 1
+            fi
+
+            touch "$out"
+          '';
+        }
+      );
+
+      devShells = forEachSystem (
+        system:
+        let
+          pkgs = pkgsFor system;
+          formatter = self.formatter.${system};
           biomeArch = if pkgs.stdenv.hostPlatform.isAarch64 then "arm64" else "x64";
         in
         {
           default = pkgs.mkShell {
-            inputsFrom = [ package ];
-            packages =
-              buildInputs
-              ++ nativeBuildInputs
+            packages = [
+              pkgs.importNpmLock.hooks.linkNodeModulesHook
+              pkgs.nodejs
+              pkgs.typescript-language-server
+              pkgs.vicinae
+              formatter
+            ];
 
-              # List any additional devshell-specific packages here.
-              ++ [
-                pkgs.nodePackages.typescript-language-server
-              ];
-            shellHook =
-              ''
-                export PATH="$PWD/node_modules/.bin:$PATH"
-              ''
-              + pkgs.lib.optionalString pkgs.stdenv.isLinux ''
-                # Biome's static musl build runs on NixOS without a system-wide nix-ld setup.
-                export BIOME_BINARY="$PWD/node_modules/@biomejs/cli-linux-${biomeArch}-musl/biome"
-              '';
+            npmDeps = pkgs.importNpmLock.buildNodeModules {
+              npmRoot = ./.;
+              inherit (pkgs) nodejs;
+            };
+
+            postShellHook = ''
+              export PATH="$PWD/node_modules/.bin:$PATH"
+            ''
+            + lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
+              biomeBinary="$PWD/node_modules/@biomejs/cli-linux-${biomeArch}-musl/biome"
+              if [ -x "$biomeBinary" ]; then
+                export BIOME_BINARY="$biomeBinary"
+              else
+                echo "warning: locked Biome musl executable not found at $biomeBinary" >&2
+              fi
+              unset biomeBinary
+            '';
           };
         }
       );
+
+      formatter = forEachSystem (system: (pkgsFor system).nixfmt-tree);
     };
 }

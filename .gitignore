@@ -4,9 +4,8 @@
 # Vicinae (generated from package.json)
 /vicinae-env.d.ts
 
-# Nix / Dream2nix
+# Nix
 /result
-/.dream2nix/
 
 ### direnv ###
 .direnv

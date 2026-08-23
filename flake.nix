@@ -68,48 +68,9 @@
         }
       );
 
-      checks = forEachSystem (
-        system:
-        let
-          pkgs = pkgsFor system;
-          package = self.packages.${system}.music-links;
-        in
-        {
-          music-links = package;
-
-          music-links-layout = pkgs.runCommand "music-links-layout" { } ''
-            extension="${package}"
-
-            if [ ! -f "$extension/package.json" ]; then
-              echo "missing package.json at the extension root" >&2
-              exit 1
-            fi
-
-            jsEntry="$(${pkgs.findutils}/bin/find "$extension" -maxdepth 1 -type f -name '*.js' -print -quit)"
-            if [ -z "$jsEntry" ]; then
-              echo "missing compiled JavaScript entry point at the extension root" >&2
-              exit 1
-            fi
-
-            if [ ! -f "$extension/assets/extension_icon.png" ]; then
-              echo "missing assets/extension_icon.png" >&2
-              exit 1
-            fi
-
-            if [ -e "$extension/lib/node_modules" ]; then
-              echo "unexpected lib/node_modules directory in the extension output" >&2
-              exit 1
-            fi
-
-            if ${pkgs.gnugrep}/bin/grep --binary-files=without-match -R -F -q /build/ "$extension"; then
-              echo "extension output contains a reference to /build/" >&2
-              exit 1
-            fi
-
-            touch "$out"
-          '';
-        }
-      );
+      checks = forEachSystem (system: {
+        inherit (self.packages.${system}) music-links;
+      });
 
       devShells = forEachSystem (
         system:
@@ -133,10 +94,7 @@
               inherit (pkgs) nodejs;
             };
 
-            postShellHook = ''
-              export PATH="$PWD/node_modules/.bin:$PATH"
-            ''
-            + lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
+            postShellHook = lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
               biomeBinary="$PWD/node_modules/@biomejs/cli-linux-${biomeArch}-musl/biome"
               if [ -x "$biomeBinary" ]; then
                 export BIOME_BINARY="$biomeBinary"

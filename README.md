@@ -24,7 +24,7 @@ Build the directly installable Vicinae extension:
 nix build
 ```
 
-Build the extension and validate its installed layout:
+Build the extension through the flake's checks:
 
 ```console
 nix flake check

@@ -13,12 +13,37 @@ and can copy it to your clipboard.
 The flake offers Vicinae's Cachix cache as an optional build acceleration. Nix may ask you to
 approve the flake configuration. Declining the cache does not affect build correctness.
 
-## Building
+## Install
 
-Build the directly installable Vicinae extension:
+### With `nix build`
+
+To install manually, use Vicinae's per-user extension directory as the Nix output link:
 
 ```console
-nix build
+extension_dir="${XDG_DATA_HOME:-$HOME/.local/share}/vicinae/extensions"
+mkdir -p "$extension_dir"
+nix build --out-link "$extension_dir/music-links"
+```
+
+To update it later, pull the latest changes and run the same commands again.
+
+### With Home Manager
+
+Add this repository as a flake input:
+
+```nix
+inputs.music-links.url = "github:arilence/vicinae-music-links";
+```
+
+Then pass its default package to Vicinae's Home Manager module:
+
+```nix
+{ inputs, pkgs, ... }:
+{
+  programs.vicinae.extensions = [
+    inputs.music-links.packages.${pkgs.system}.default
+  ];
+}
 ```
 
 ## Development
@@ -47,22 +72,3 @@ direnv reload
 ```
 
 If you do not use direnv, exit and re-enter `nix develop` instead.
-
-## Home Manager
-
-Add this repository as a flake input:
-
-```nix
-inputs.music-links.url = "github:arilence/vicinae-music-links";
-```
-
-Then pass its default package to Vicinae's Home Manager module:
-
-```nix
-{ inputs, pkgs, ... }:
-{
-  programs.vicinae.extensions = [
-    inputs.music-links.packages.${pkgs.system}.default
-  ];
-}
-```

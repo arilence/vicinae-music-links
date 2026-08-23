@@ -3,7 +3,7 @@
 A Vicinae extension for creating cross-platform music links.
 
 Paste a link from a music streaming service, and Music Links generates a service-agnostic share link
-and copies it to your clipboard.
+and can copy it to your clipboard.
 
 ## Prerequisites
 
@@ -13,24 +13,12 @@ and copies it to your clipboard.
 The flake offers Vicinae's Cachix cache as an optional build acceleration. Nix may ask you to
 approve the flake configuration. Declining the cache does not affect build correctness.
 
-## Build and validate
+## Building
 
 Build the directly installable Vicinae extension:
 
 ```console
 nix build
-```
-
-Build the extension through the flake's checks:
-
-```console
-nix flake check
-```
-
-Format Nix files with the flake's formatter:
-
-```console
-nix fmt
 ```
 
 ## Development
@@ -45,8 +33,8 @@ npm run dev
 The development environment uses a separate extension ID `music-links-dev` and title
 `Music Links (Dev)` so that it can be installed alongside the stable build.
 
-The development shell links `node_modules` from the dependency graph in `package-lock.json`; do not
-run a normal `npm install` or `npm add` inside it.
+The nix development shell links `node_modules` from the dependency graph in `package-lock.json`; do
+not run a normal `npm install` or `npm add` inside it.
 
 To add a dependency, use npm's `--package-lock-only` option:
 

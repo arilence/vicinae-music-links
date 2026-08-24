@@ -85,6 +85,7 @@
               pkgs.importNpmLock.hooks.linkNodeModulesHook
               pkgs.nodejs
               pkgs.typescript-language-server
+              pkgs.yaml-language-server
               pkgs.vicinae
               formatter
             ];

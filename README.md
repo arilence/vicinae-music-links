@@ -3,7 +3,7 @@
 A Vicinae extension for creating cross-platform music links.
 
 Paste a link from a music streaming service, and Music Links generates a service-agnostic share link
-and can copy it to your clipboard.
+that you can copy to your clipboard for quick sharing.
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ and can copy it to your clipboard.
   enabled.
 
 The flake offers Vicinae's Cachix cache as an optional build acceleration. Nix may ask you to
-approve the flake configuration. Declining the cache does not affect build correctness.
+approve the flake configuration.
 
 ## Install
 
@@ -32,7 +32,7 @@ To update it later, pull the latest changes and run the same commands again.
 Add this repository as a flake input:
 
 ```nix
-inputs.music-links.url = "github:arilence/vicinae-music-links";
+inputs.vicinae-music-links.url = "github:arilence/vicinae-music-links";
 ```
 
 Then pass its default package to Vicinae's Home Manager module:
@@ -41,34 +41,53 @@ Then pass its default package to Vicinae's Home Manager module:
 { inputs, pkgs, ... }:
 {
   programs.vicinae.extensions = [
-    inputs.music-links.packages.${pkgs.system}.default
+    inputs.vicinae-music-links.packages.${pkgs.system}.default
   ];
 }
 ```
 
 ## Development
 
-Enter the development environment, then start Vicinae's extension development command:
+1. Enter the development environment:
 
-```console
-nix develop
-npm run dev
-```
+   ```bash
+   # If using direnv
+   direnv allow
 
-The development environment uses a separate extension ID `music-links-dev` and title
-`Music Links (Dev)` so that it can be installed alongside the stable build.
+   # Otherwise...
+   nix develop
+   ```
+
+2. Start Vicinae's extension development command
+
+   ```bash
+   npm run dev
+   ```
+
+The development environment uses a separate extension identifier, `music-links-dev`, so that it can
+be installed alongside the stable build.
 
 The nix development shell links `node_modules` from the dependency graph in `package-lock.json`; do
 not run a normal `npm install` or `npm add` inside it.
 
-To add a dependency, use npm's `--package-lock-only` option:
+Instead, to add a dependency:
 
-```console
-npm install --package-lock-only <package-name>
-# or a dev dep
-npm install --save-dev --package-lock-only <package-name>
+1. Use npm's `--package-lock-only` option
 
-direnv reload
-```
+   ```bash
+   # regular dependency
+   npm install --package-lock-only <package-name>
 
-If you do not use direnv, exit and re-enter `nix develop` instead.
+   # or a dev dependency with `--save-dev`
+   npm install --save-dev --package-lock-only <package-name>
+   ```
+
+2. Reload development environment
+
+   ```bash
+   # If using direnv
+   direnv reload
+
+   # Otherwise, exit and re-enter nix shell
+   nix develop
+   ```

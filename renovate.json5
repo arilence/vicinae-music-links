@@ -2,8 +2,14 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    "helpers:pinGitHubActionDigestsToSemver",
     ":automergeBranch", // No PR when automerging
+    "helpers:pinGitHubActionDigestsToSemver",
+    "docker:pinDigests",
+    ":configMigration",
+    ":pinDevDependencies",
+    "abandonments:recommended",
+    "security:minimumReleaseAgeNpm",
+    ":maintainLockFilesWeekly"
   ],
   "nix": {
     "enabled": true,

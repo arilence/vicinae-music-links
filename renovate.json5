@@ -9,4 +9,14 @@
   "nix": {
     "enabled": true,
   },
+  "packageRules": [
+    {
+      "description": "Automerge non-major updates",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0/",
+      "minimumReleaseAge": "14 days",
+      "automergeType": "branch",
+      "automerge": true,
+    },
+  ],
 }

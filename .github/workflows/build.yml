@@ -4,7 +4,10 @@ on:
   push:
     branches:
       - main
+      - "renovate/**"
   pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read

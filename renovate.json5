@@ -4,6 +4,7 @@
     "config:best-practices",
     ":automergeBranch", // No PR when automerging
     "helpers:pinGitHubActionDigestsToSemver",
+    "group:allNonMajor", // I may regret this
   ],
   "nix": {
     "enabled": true,

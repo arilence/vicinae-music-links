@@ -91,3 +91,9 @@ Instead, to add a dependency:
    # Otherwise, exit and re-enter nix shell
    nix develop
    ```
+
+## Acknowledgements
+
+This project uses an icon from [Phosphor Icons](https://phosphoricons.com/) as part of its application icon.
+
+Phosphor Icons is copyright © 2023 Phosphor Icons and is licensed under the [MIT License](https://github.com/phosphor-icons/core/blob/main/LICENSE).

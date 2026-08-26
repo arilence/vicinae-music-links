@@ -60,6 +60,7 @@
             version = packageJson.version;
             src = ./.;
             npmFlags = [ "--legacy-peer-deps" ];
+            npmRebuildFlags = [ "--ignore-scripts" ];
           };
         in
         {

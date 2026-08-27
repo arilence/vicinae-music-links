@@ -41,9 +41,8 @@ jobs:
           restore-prefixes-first-match: nix-${{ runner.os }}-
 
       - name: Check flake and build package
-        run: >-
-          nix flake check
-          --no-update-lock-file
-          # Do not accept cache configuration supplied by the pull request's flake.
-          --option accept-flake-config false
-          --print-build-logs
+        run: |
+          nix flake check \
+            --no-update-lock-file \
+            --option accept-flake-config false \
+            --print-build-logs

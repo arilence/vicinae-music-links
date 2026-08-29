@@ -94,6 +94,9 @@
             npmDeps = pkgs.importNpmLock.buildNodeModules {
               npmRoot = ./.;
               inherit (pkgs) nodejs;
+              derivationArgs = lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+                npmFlags = [ "--libc=musl" ];
+              };
             };
 
             postShellHook = lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''

@@ -21,3 +21,6 @@ curly_bracket_next_line = false
 indent_brace_style = BSD
 spaces_around_operators = true
 spaces_around_brackets = none
+
+[*.md]
+trim_trailing_whitespace = false

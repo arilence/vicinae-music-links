@@ -69,6 +69,7 @@
         }
       );
 
+      # Build each package instead of just checking they are derivations
       checks = forEachSystem (system: {
         inherit (self.packages.${system}) music-links;
       });

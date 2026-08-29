@@ -9,3 +9,6 @@
 
 ### direnv ###
 .direnv
+
+# Amp orb runtime files
+/.amp/portals/*

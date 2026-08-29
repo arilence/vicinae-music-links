@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+nix_profile="$HOME/.nix-profile"
+
+echo "==> Installing Nix"
+if [[ ! -x "$nix_profile/bin/nix" ]]; then
+  curl --fail --location --proto '=https' --tlsv1.2 https://nixos.org/nix/install \
+    | sh -s -- --no-daemon --yes
+else
+  echo "Nix is already installed"
+fi
+
+# The installer cannot update this running script's environment.
+# shellcheck disable=SC1091
+source "$nix_profile/etc/profile.d/nix.sh"
+
+echo "==> Realizing the locked development environment"
+time eval "$(
+  "$nix_profile/bin/nix" \
+    --extra-experimental-features 'nix-command flakes' \
+    --accept-flake-config \
+    print-dev-env "$repo_root"
+)"
+
+profile_marker="# vicinae-music-links Nix development shell"
+if ! grep -Fqx "$profile_marker" "$HOME/.bash_profile" 2>/dev/null; then
+  echo "==> Adding the development environment to login shells"
+  cat >> "$HOME/.bash_profile" <<EOF
+
+$profile_marker
+if [[ -z "\${IN_NIX_SHELL:-}" && "\${PWD}" == "$repo_root" ]]; then
+  eval "\$("$nix_profile/bin/nix" \\
+    --extra-experimental-features 'nix-command flakes' \\
+    --accept-flake-config \\
+    print-dev-env "$repo_root")"
+fi
+EOF
+else
+  echo "==> Login-shell development environment is already configured"
+fi
+
+echo "==> Orb setup complete"

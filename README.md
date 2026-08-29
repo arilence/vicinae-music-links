@@ -1,41 +1,38 @@
 # Music Links
 
-A Vicinae extension for creating cross-platform music links.
+A [Vicinae](https://vicinae.com/) extension for creating cross-platform music links. Paste a link from a supported streaming service and copy one service-agnostic link to share.
 
-Paste a link from a music streaming service, and Music Links generates a service-agnostic share link
-that you can copy to your clipboard for quick sharing.
+## Build with Nix
 
-## Prerequisites
+Nix with flakes enabled is the recommended setup. The flake provides the package, development tools, and dependencies.
 
-- [Nix](https://nixos.org/download/) with the `nix-command` and `flakes` experimental features
-  enabled.
+```bash
+nix build
+```
 
-The flake offers Vicinae's Cachix cache as an optional build acceleration. Nix may ask you to
-approve the flake configuration.
+Nix may ask you to approve the flake's Vicinae binary cache.
 
 ## Install
 
-### With `nix build`
+### Manual Nix build
 
-To install manually, use Vicinae's per-user extension directory as the Nix output link:
+Build directly into Vicinae's per-user extension directory:
 
-```console
+```bash
 extension_dir="${XDG_DATA_HOME:-$HOME/.local/share}/vicinae/extensions"
 mkdir -p "$extension_dir"
 nix build --out-link "$extension_dir/music-links"
 ```
 
-To update it later, pull the latest changes and run the same commands again.
-
 ### With Home Manager
 
-Add this repository as a flake input:
+Add the flake input:
 
 ```nix
 inputs.vicinae-music-links.url = "github:arilence/vicinae-music-links";
 ```
 
-Then pass its default package to Vicinae's Home Manager module:
+Then add its package to Vicinae:
 
 ```nix
 { inputs, pkgs, ... }:
@@ -46,54 +43,42 @@ Then pass its default package to Vicinae's Home Manager module:
 }
 ```
 
-## Development
+## Develop
 
-1. Enter the development environment:
+### With Nix
 
-   ```bash
-   # If using direnv
-   direnv allow
+```bash
+nix develop
+npm run dev
+```
 
-   # Otherwise...
-   nix develop
-   ```
+The Nix shell provides `node_modules`; do not run `npm install` inside it. The development extension uses the ID `music-links-dev`, so it can coexist with the stable build.
 
-2. Start Vicinae's extension development command
+To add a package, update only the manifest and lockfile, then exit and re-enter `nix develop`:
 
-   ```bash
-   npm run dev
-   ```
+```bash
+npm install --package-lock-only --legacy-peer-deps <package>
+# Add --save-dev for a development dependency.
+```
 
-The development environment uses a separate extension identifier, `music-links-dev`, so that it can
-be installed alongside the stable build.
+### With npm only
 
-The nix development shell links `node_modules` from the dependency graph in `package-lock.json`; do
-not run a normal `npm install` or `npm add` inside it.
+On a system with Node.js and npm installed:
 
-Instead, to add a dependency:
+```bash
+npm ci --legacy-peer-deps
+npm run dev
+```
 
-1. Use npm's `--package-lock-only` option
+## Format and lint
 
-   ```bash
-   # regular dependency
-   npm install --package-lock-only <package-name>
+Run these inside `nix develop`, or after installing dependencies with npm:
 
-   # or a dev dependency with `--save-dev`
-   npm install --save-dev --package-lock-only <package-name>
-   ```
-
-2. Reload development environment
-
-   ```bash
-   # If using direnv
-   direnv reload
-
-   # Otherwise, exit and re-enter nix shell
-   nix develop
-   ```
+```bash
+npm run format
+npm run lint
+```
 
 ## Acknowledgements
 
-This project uses an icon from [Phosphor Icons](https://phosphoricons.com/) as part of its application icon.
-
-Phosphor Icons is copyright © 2023 Phosphor Icons and is licensed under the [MIT License](https://github.com/phosphor-icons/core/blob/main/LICENSE).
+The application icon uses an icon from [Phosphor Icons](https://phosphoricons.com/), licensed under the [MIT License](https://github.com/phosphor-icons/core/blob/main/LICENSE).

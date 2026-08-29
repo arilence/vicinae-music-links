@@ -3,13 +3,13 @@ import { songPortProvider } from "./songport";
 import type { UniversalLinkProvider } from "./types";
 
 export type {
-    MusicMetadata,
-    StreamingService,
-    UniversalLinkProvider,
-    UniversalLinkResult,
+  MusicMetadata,
+  StreamingService,
+  UniversalLinkProvider,
+  UniversalLinkResult,
 } from "./types";
 
 export const universalLinkProviders = [
-    songPortProvider,
-    odesliProvider,
+  songPortProvider,
+  odesliProvider,
 ] satisfies UniversalLinkProvider[];

@@ -2,6 +2,10 @@
 
 A [Vicinae](https://vicinae.com/) extension for creating cross-platform music links. Paste a link from a supported streaming service and copy one service-agnostic link to share.
 
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/e3a1c73c-5415-4708-9c5b-87329e0ca69d" />
+</div>
+
 ## Build with Nix
 
 Nix with flakes enabled is the recommended setup. The flake provides the package, development tools, and dependencies.

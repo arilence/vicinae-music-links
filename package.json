@@ -40,6 +40,6 @@
   "devDependencies": {
     "@types/node": "26.2.0",
     "typescript": "7.0.2",
-    "@biomejs/biome": "2.5.9"
+    "@biomejs/biome": "2.5.10"
   }
 }
